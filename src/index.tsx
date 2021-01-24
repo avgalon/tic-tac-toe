@@ -2,23 +2,40 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-export function Square(props) {
+export type SquareValue = 'X' | 'O' | null;
+
+export interface SquareProps {
+    onClick: (event: React.MouseEvent<HTMLButtonElement> | number) => void;
+    value: SquareValue;
+}
+
+export interface BoardProps {
+    onClick: (idx: number) => void;
+    squares: SquareValue[]
+}
+
+
+
+export function Square(props: SquareProps): JSX.Element {
         return (
             <button
                 className="square"
-                onClick={props.onClick}>
+                onClick={ props.onClick }>
                 {props.value}
             </button>
         );
 }
 
 class Board extends React.Component {
-    renderSquare(i, j) {
-        const squareIdx = (j === 1 ? i + 3 : (j === 2 ? i + 6 : i));
+   // @ts-ignore
+    props: BoardProps;
+
+    renderSquare(i: number, j: number): JSX.Element {
+        const squareIdx: number = (j === 1 ? i + 3 : (j === 2 ? i + 6 : i));
         return <Square key={`square-${i}-${j}-${squareIdx}`} value={this.props.squares[squareIdx]} onClick={() => this.props.onClick(squareIdx)}/>;
     }
 
-    renderBoardRow(i) {
+    renderBoardRow(i: number): JSX.Element {
         return <div key={`board-row-${i}`} className="board-row">
                     {[...Array(3)].map((x, j) =>
                         this.renderSquare(i, j)
@@ -26,7 +43,7 @@ class Board extends React.Component {
                 </div>;
     }
 
-    render() {
+    render(): JSX.Element {
         return (
             <div>
                 {[...Array(3)].map((x, i) =>
@@ -37,8 +54,18 @@ class Board extends React.Component {
     }
 }
 
+
+
+interface GameState {
+    history: [{squares: SquareValue[]}];
+    xIsNext: boolean;
+    stepNumber: number;
+}
+
 class Game extends React.Component {
-    constructor(props) {
+    state: GameState;
+
+    constructor(props: SquareProps) {
         super(props);
         this.state = {
             history: [{squares: Array(9).fill(null)}],
@@ -47,16 +74,20 @@ class Game extends React.Component {
         }
     }
 
-    getGameStatus() {
-        const winner = calculateWinner( [...this.state.history].pop().squares);
+    getGameStatus(): string {
+        const lastMoveSquares = [...this.state.history].pop();
+        let winner: string | null = `err`;
+        if (lastMoveSquares) {
+            winner = calculateWinner(lastMoveSquares.squares);
+        }
         return winner ? `Winner: ${winner}` : `Next player: ${this.getXorO()}`;
     }
 
-    getXorO() {
+    getXorO(): SquareValue {
         return this.state.xIsNext ? "X" : "O";
     }
 
-    getMovesHistory() {
+    getMovesHistory(): JSX.Element[] {
         return this.state.history.map((step, move) => {
             const desc = move ?
                 'Go to move #' + move :
@@ -69,14 +100,14 @@ class Game extends React.Component {
         });
     }
 
-    jumpTo(step) {
+    jumpTo(step: number): void {
         this.setState({
             stepNumber: step,
             xIsNext: (step % 2) === 0,
         });
     }
 
-    handleClick(i) {
+    handleClick(i: number) {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[this.state.stepNumber];
         const squares = current.squares.slice();
@@ -93,14 +124,14 @@ class Game extends React.Component {
         });
     }
 
-    render() {
+    render(): JSX.Element {
         const current = this.state.history[this.state.stepNumber];
         return (
             <div className="game">
                 <div className="game-board">
                     <Board
                         squares={current.squares}
-                        onClick={(i) => this.handleClick(i)}
+                        onClick={(i: number) => this.handleClick(i)}
                     />
                 </div>
                 <div className="game-info">
@@ -119,7 +150,7 @@ ReactDOM.render(
     document.getElementById('root')
 );
 
-function calculateWinner(squares) {
+function calculateWinner(squares: SquareValue[]): SquareValue {
     const lines = [
         [0, 1, 2],
         [3, 4, 5],
