@@ -4,9 +4,19 @@
     "display": "fullscreen",
     "scope": "/",
     "start_url": "/",
-    "app_name": "Tic Tac Toe",
+    "name": "Tic Tac Toe",
     "short_name": "TTT",
     "icons": [
+        {
+            "src": "/icon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
         {
             "src": "/icon-192x192.png",
             "sizes": "192x192",
